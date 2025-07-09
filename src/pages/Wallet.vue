@@ -415,12 +415,15 @@ export default {
         connectedWallets: [],
         activeWalletId: null,
         currency: 'sats',
-        currencies: ['sats', 'btc', 'usd'],
+        currencies: ['sats', 'btc', 'usd', 'eur', 'gbp', 'jpy', 'cad', 'chf', 'aud'],
         exchangeRates: {
           usd: 65000,
           eur: 60000,
           gbp: 52000,
-          jpy: 9800000
+          jpy: 9800000,
+          cad: 0,
+          chf: 0,
+          aud: 0
         },
         preferredFiatCurrency: 'USD',
         denominationCurrency: 'sats'
@@ -474,10 +477,69 @@ export default {
     }
   },
   created() {
-    this.loadWalletState()
-    // this.generateMockTransactions()
+    this.loadWalletState();
+    this.loadFiatPrices();
+    this.startFiatPriceInterval();
   },
   methods: {
+    async fetchAndStoreFiatPrices() {
+      try {
+        const response = await fetch('https://mempool.space/api/v1/prices');
+        const data = await response.json();
+        localStorage.setItem('buhoGO_fiat_prices', JSON.stringify(data));
+        this.walletState.exchangeRates = {
+          usd: data.USD,
+          eur: data.EUR,
+          gbp: data.GBP,
+          jpy: data.JPY,
+          cad: data.CAD,
+          chf: data.CHF,
+          aud: data.AUD
+        };
+        // Optionally persist wallet state
+        localStorage.setItem('buhoGO_wallet_state', JSON.stringify(this.walletState));
+      } catch (e) {
+        console.error('Failed to fetch fiat prices', e);
+      }
+    },
+    loadFiatPrices() {
+      const prices = localStorage.getItem('buhoGO_fiat_prices');
+      if (prices) {
+        const data = JSON.parse(prices);
+        this.walletState.exchangeRates = {
+          usd: data.USD,
+          eur: data.EUR,
+          gbp: data.GBP,
+          jpy: data.JPY,
+          cad: data.CAD,
+          chf: data.CHF,
+          aud: data.AUD
+        };
+      }
+    },
+    startFiatPriceInterval() {
+      this.fetchAndStoreFiatPrices();
+      setInterval(() => {
+        this.fetchAndStoreFiatPrices();
+      }, 5 * 60 * 1000);
+    },
+    // Fetch historical fiat price for a transaction (for tx details)
+    async fetchHistoricalFiatAmount(tx, currency = this.walletState.preferredFiatCurrency) {
+      try {
+        const url = `https://mempool.space/api/v1/historical-price?currency=${currency}&timestamp=${tx.settled_at}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        const priceObj = data.prices && data.prices.length > 0 ? data.prices[0] : null;
+        if (priceObj && priceObj[currency]) {
+          const btcAmount = tx.amount / 100000000;
+          const fiatAmount = btcAmount * priceObj[currency];
+          return fiatAmount.toFixed(2);
+        }
+      } catch (e) {
+        console.error('Failed to fetch historical price', e);
+      }
+      return null;
+    },
     async loadWalletState() {
       this.isLoading = true;
       // Load wallet state from localStorage
@@ -597,17 +659,13 @@ export default {
       // Toggle between sats and the preferred fiat currency
       const newDenomination = this.walletState.denominationCurrency === 'sats'
         ? this.walletState.preferredFiatCurrency.toLowerCase()
-        : 'sats'
-
-      this.walletState.denominationCurrency = newDenomination
-
-      // Save to localStorage
-      localStorage.setItem('buhoGO_wallet_state', JSON.stringify(this.walletState))
-
+        : 'sats';
+      this.walletState.denominationCurrency = newDenomination;
+      localStorage.setItem('buhoGO_wallet_state', JSON.stringify(this.walletState));
       this.$q.notify({
         message: `Currency changed to ${newDenomination.toUpperCase()}`,
         position: 'top'
-      })
+      });
     },
     getCurrencySymbol(currency) {
       switch (currency.toUpperCase()) {
