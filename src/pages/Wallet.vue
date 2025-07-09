@@ -317,8 +317,22 @@
 
           <div v-if="showQrScanner" class="payment-step">
             <div class="qr-scanner-container">
+              <div v-if="cameraError" class="camera-error-message">
+                <q-icon name="las la-exclamation-triangle" size="2em" color="orange"/>
+                <h3>Camera Access Issue</h3>
+                <p>{{ cameraError }}</p>
+                <q-btn 
+                  outline 
+                  color="primary" 
+                  label="Try Again" 
+                  @click="retryCameraAccess"
+                  class="q-mt-sm"
+                />
+              </div>
               <qrcode-capture
+                v-else
                 @detect="handleScanInvoice"
+                @error="handleCameraError"
                 style="border-radius: 8px !important;"
                 :capture="null"
               />
@@ -447,7 +461,8 @@ export default {
         amount: 0,
         description: '',
         destination: ''
-      }
+      },
+      cameraError: null
     }
   },
   computed: {
@@ -885,6 +900,40 @@ export default {
         message: 'Invoice shared',
         position: 'top'
       })
+    },
+    handleCameraError(error) {
+      console.error('Camera error:', error);
+      
+      let errorMessage = 'Unable to access camera. ';
+      
+      switch (error.name) {
+        case 'NotAllowedError':
+          errorMessage += 'Please grant camera permission and try again.';
+          break;
+        case 'NotFoundError':
+          errorMessage += 'No camera found on this device.';
+          break;
+        case 'NotReadableError':
+          errorMessage += 'Camera is already in use by another application.';
+          break;
+        case 'OverconstrainedError':
+          errorMessage += 'Camera constraints cannot be satisfied.';
+          break;
+        case 'SecurityError':
+          errorMessage += 'Camera access blocked due to security restrictions.';
+          break;
+        default:
+          errorMessage += 'Please check your camera settings and try again.';
+      }
+      
+      this.cameraError = errorMessage;
+    },
+    retryCameraAccess() {
+      this.cameraError = null;
+      // Reset scanner state
+      this.showQrScanner = true;
+      // Force re-render of the qrcode-capture component
+      this.$forceUpdate();
     }
   }
 }
@@ -1360,5 +1409,29 @@ export default {
   border-radius: 0.75rem;
   padding: 0.75rem 2rem;
   font-weight: 500;
+}
+
+.camera-error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  height: 100%;
+  color: #6b7280;
+}
+
+.camera-error-message h3 {
+  margin: 1rem 0 0.5rem 0;
+  color: #f59e0b;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.camera-error-message p {
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+  max-width: 300px;
 }
 </style>
