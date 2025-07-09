@@ -61,7 +61,7 @@
         </q-card>
 
         <!-- Notifications Settings -->
-        <q-card class="settings-card no-shadow" bordered @click="showNotificationsDialog = true">
+        <q-card class="settings-card no-shadow" bordered @click="handleNotificationsClick">
           <q-card-section class="settings-card-content">
             <div class="settings-item">
               <div class="settings-item-icon notifications-icon">
@@ -69,7 +69,9 @@
               </div>
               <div class="settings-item-text">
                 <div class="settings-item-title">Notifications</div>
-                <div class="settings-item-subtitle">Payment alerts</div>
+                <div class="settings-item-subtitle">
+                  {{ notificationsEnabled ? 'Enabled' : 'Disabled' }}
+                </div>
               </div>
             </div>
             <q-icon name="las la-chevron-right" size="xs" class="settings-item-arrow"/>
@@ -77,7 +79,7 @@
         </q-card>
 
         <!-- Security Settings -->
-        <q-card class="settings-card no-shadow" bordered @click="showSecurityDialog = true">
+        <q-card class="settings-card no-shadow" bordered @click="handleSecurityClick">
           <q-card-section class="settings-card-content">
             <div class="settings-item">
               <div class="settings-item-icon security-icon">
@@ -85,7 +87,46 @@
               </div>
               <div class="settings-item-text">
                 <div class="settings-item-title">Security</div>
-                <div class="settings-item-subtitle">PIN protection</div>
+                <div class="settings-item-subtitle">
+                  {{ pinEnabled ? 'PIN enabled' : 'PIN disabled' }}
+                </div>
+              </div>
+            </div>
+            <q-icon name="las la-chevron-right" size="xs" class="settings-item-arrow"/>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <!-- Support Section -->
+      <div class="settings-section">
+        <h3 class="settings-section-title">Support</h3>
+
+        <!-- Help & Support -->
+        <q-card class="settings-card no-shadow" bordered @click="openSupport">
+          <q-card-section class="settings-card-content">
+            <div class="settings-item">
+              <div class="settings-item-icon help-icon">
+                <q-icon name="las la-question-circle"/>
+              </div>
+              <div class="settings-item-text">
+                <div class="settings-item-title">Help & Support</div>
+                <div class="settings-item-subtitle">Get help with BuhoGO</div>
+              </div>
+            </div>
+            <q-icon name="las la-external-link-alt" size="xs" class="settings-item-arrow"/>
+          </q-card-section>
+        </q-card>
+
+        <!-- About -->
+        <q-card class="settings-card no-shadow" bordered @click="showAboutDialog = true">
+          <q-card-section class="settings-card-content">
+            <div class="settings-item">
+              <div class="settings-item-icon about-icon">
+                <q-icon name="las la-info-circle"/>
+              </div>
+              <div class="settings-item-text">
+                <div class="settings-item-title">About BuhoGO</div>
+                <div class="settings-item-subtitle">Version and information</div>
               </div>
             </div>
             <q-icon name="las la-chevron-right" size="xs" class="settings-item-arrow"/>
@@ -235,6 +276,53 @@
       </q-card>
     </q-dialog>
 
+    <!-- About Dialog -->
+    <q-dialog v-model="showAboutDialog">
+      <q-card class="settings-dialog">
+        <q-card-section class="dialog-header">
+          <div class="text-h6">About BuhoGO</div>
+          <q-btn flat round dense icon="las la-times" v-close-popup/>
+        </q-card-section>
+
+        <q-card-section class="dialog-content">
+          <div class="about-content">
+            <div class="about-logo">
+              <svg xmlns="http://www.w3.org/2000/svg" width="60" height="64" viewBox="0 0 30 32" fill="none">
+                <path d="M0 13.4423C0 6.01833 6.01833 0 13.4423 0V18.5577C13.4423 25.9817 7.42399 32 0 32V13.4423Z" fill="#059573"/>
+                <path d="M15.3906 7.30444C15.3906 3.27031 18.6609 0 22.6951 0C26.7292 0 29.9995 3.27031 29.9995 7.30444V7.72091C29.9995 11.755 26.7292 15.0253 22.6951 15.0253C18.6609 15.0253 15.3906 11.755 15.3906 7.72091V7.30444Z" fill="#78D53C"/>
+                <path d="M15.3906 24.281C15.3906 20.2469 18.6609 16.9766 22.6951 16.9766C26.7292 16.9766 29.9995 20.2469 29.9995 24.281V24.6975C29.9995 28.7316 26.7292 32.0019 22.6951 32.0019C18.6609 32.0019 15.3906 28.7316 15.3906 24.6975V24.281Z" fill="#43B65B"/>
+              </svg>
+            </div>
+            <h3 class="about-title">BuhoGO</h3>
+            <p class="about-subtitle">Lightning Wallet for the Web</p>
+            <div class="about-version">Version 1.0.0</div>
+            
+            <div class="about-description">
+              <p>BuhoGO is a Lightning Network wallet that connects to your existing wallet via Nostr Wallet Connect (NWC). Send and receive Bitcoin payments instantly with low fees.</p>
+            </div>
+
+            <div class="about-links">
+              <q-btn 
+                flat 
+                color="primary" 
+                icon="las la-external-link-alt" 
+                label="GitHub" 
+                @click="openGitHub"
+                class="q-mr-sm"
+              />
+              <q-btn 
+                flat 
+                color="primary" 
+                icon="las la-shield-alt" 
+                label="Privacy Policy" 
+                @click="openPrivacyPolicy"
+              />
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
     <!-- Wallets Dialog -->
     <q-dialog v-model="showWalletsSheet">
       <q-card class="settings-dialog">
@@ -332,6 +420,7 @@ export default {
       showCurrencyDialog: false,
       showNotificationsDialog: false,
       showSecurityDialog: false,
+      showAboutDialog: false,
       notificationsEnabled: true,
       hasNotificationPermission: false,
       pinEnabled: false,
@@ -427,9 +516,6 @@ export default {
           return balance.toLocaleString() + ' sats'
       }
     },
-    viewWalletDetails(walletId) {
-      // Future implementation for wallet details
-    },
     connectNewWallet() {
       this.$router.push('/');
     },
@@ -481,6 +567,35 @@ export default {
     },
     handleWalletClick() {
       this.showWalletsSheet = true;
+    },
+    handleNotificationsClick() {
+      if ('Notification' in window) {
+        this.showNotificationsDialog = true;
+      } else {
+        this.$q.notify({
+          type: 'negative',
+          message: 'Notifications not supported on this device',
+          position: 'top'
+        });
+      }
+    },
+    handleSecurityClick() {
+      this.showSecurityDialog = true;
+    },
+    openSupport() {
+      // Open support documentation or contact
+      const supportUrl = 'https://github.com/getAlby/lightning-browser-extension/discussions';
+      window.open(supportUrl, '_blank', 'noopener,noreferrer');
+    },
+    openGitHub() {
+      window.open('https://github.com/getAlby/lightning-browser-extension', '_blank', 'noopener,noreferrer');
+    },
+    openPrivacyPolicy() {
+      this.$q.notify({
+        type: 'info',
+        message: 'Privacy policy coming soon',
+        position: 'top'
+      });
     },
     updateWalletName(wallet) {
       // Save the updated wallet state
@@ -914,5 +1029,66 @@ export default {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
+}
+
+/* Support Section Icons */
+.help-icon {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.about-icon {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+}
+
+/* About Dialog Styles */
+.about-content {
+  text-align: center;
+  padding: 1rem;
+}
+
+.about-logo {
+  margin-bottom: 1rem;
+}
+
+.about-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #10b981, #059669);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0.5rem 0;
+}
+
+.about-subtitle {
+  color: #6b7280;
+  margin: 0 0 1rem 0;
+}
+
+.about-version {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+.about-description {
+  margin-bottom: 2rem;
+}
+
+.about-description p {
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.about-links {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
 }
 </style>

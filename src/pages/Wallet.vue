@@ -135,9 +135,10 @@
           </q-item>
         </q-list>
 
-        <div class="fixed fixed-bottom bg-white">
-          <q-btn flat class=" view-all-btn" no-caps label="View All Transactions"
-                 @click="$router.push('/transaction-history')"/>
+        <div class="view-all-container" v-if="transactions.length > 0">
+          <q-btn flat class="view-all-btn" no-caps label="View All Transactions" disabled>
+            <q-tooltip>Feature coming soon</q-tooltip>
+          </q-btn>
         </div>
       </q-scroll-area>
 
