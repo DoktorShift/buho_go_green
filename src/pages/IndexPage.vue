@@ -231,7 +231,8 @@ export default {
           name: this.walletName,
           type: 'nwc',
           nwcString: this.nwcString,
-          balance: balance.balance
+          balance: balance.balance,
+          connectedAt: Date.now()
         });
 
         // Set as active wallet if it's the first one

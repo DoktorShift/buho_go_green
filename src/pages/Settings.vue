@@ -125,7 +125,7 @@
               <q-item-section>
                 <q-item-label>{{ currency }}</q-item-label>
                 <q-item-label caption>{{ getCurrencySymbol(currency) }}1 =
-                  {{ walletState.exchangeRates[currency.toLowerCase()] }} sats
+                  {{ walletState.exchangeRates[currency.toLowerCase()]?.toLocaleString() || 'Loading...' }} sats
                 </q-item-label>
               </q-item-section>
               <q-item-section side>
@@ -416,7 +416,6 @@ export default {
       return symbols[currency] || currency
     },
     formatBalance(balance) {
-      console.log(this.walletState)
       switch (this.walletState.currency) {
         case 'btc':
           return (balance / 100000000).toFixed(8) + ' BTC'
@@ -429,8 +428,7 @@ export default {
       }
     },
     viewWalletDetails(walletId) {
-      // Implement wallet details view logic
-      console.log('Viewing wallet details:', walletId)
+      // Future implementation for wallet details
     },
     connectNewWallet() {
       this.$router.push('/');
@@ -482,7 +480,6 @@ export default {
       });
     },
     handleWalletClick() {
-      console.log('Wallet management clicked');
       this.showWalletsSheet = true;
     },
     updateWalletName(wallet) {

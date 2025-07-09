@@ -73,14 +73,20 @@ export default {
           tx = window.transactions.find(t => t.id == txId);
         }
         if (!tx) {
-          details.value.description = 'Transaction not found.';
+          details.value = {
+            status: 'unknown',
+            amount: '',
+            description: 'Transaction not found',
+            settled_at: '',
+            destination: '',
+            rawInvoice: ''
+          };
           loading.value = false;
           return;
         }
-        // Lookup invoice using SDK (simulate for now)
+        // Lookup invoice using SDK
         let invoiceData = {};
         if (tx.payment_request) {
-          // Use SDK to decode invoice
           try {
             const nwcString = walletState.connectedWallets.find(w => w.id === walletState.activeWalletId).nwcString;
             const nwc = new window.webln.NostrWebLNProvider({ nostrWalletConnectUrl: nwcString });

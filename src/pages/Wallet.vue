@@ -594,37 +594,8 @@ export default {
       this.isLoading = false;
     },
     generateMockTransactions() {
-      // Generate mock transactions for demo
-      const types = ['incoming', 'outgoing']
-      const descriptions = [
-        'Coffee payment',
-        'Donation received',
-        'Lunch with friends',
-        'Online purchase',
-        'Podcast support'
-      ]
-
-      const transactions = []
-
-      for (let i = 0; i < 5; i++) {
-        const type = types[Math.floor(Math.random() * types.length)]
-        const description = descriptions[Math.floor(Math.random() * descriptions.length)]
-        const amount = Math.floor(Math.random() * 500000) + 10000
-        const daysAgo = Math.floor(Math.random() * 30) + 1
-
-        transactions.push({
-          id: `tx-${i}`,
-          payment_hash: `hash-${i}-${Math.random().toString(36).substring(2, 10)}`,
-          amount,
-          fees_paid: type === 'outgoing' ? Math.floor(amount * 0.01) : 0,
-          description,
-          type,
-          settled_at: Math.floor(Date.now() / 1000) - daysAgo * 86400,
-          walletId: this.walletState.activeWalletId
-        })
-      }
-
-      this.transactions = transactions.sort((a, b) => b.settled_at - a.settled_at)
+      // No mock transactions - use real data from wallet
+      this.transactions = []
     },
     formatBalance(amount) {
       switch (this.walletState.currency) {
@@ -642,13 +613,14 @@ export default {
       return new Date(timestamp * 1000).toLocaleDateString()
     },
     formatDate() {
-      // Mock date - in a real app, this would be stored in the wallet data
-      const mockDate = new Date()
-      mockDate.setMonth(mockDate.getMonth() - 2) // Set to 2 months ago
-      return mockDate.toLocaleDateString()
+      // Return actual connection date if available
+      const activeWallet = this.activeWallet
+      if (activeWallet && activeWallet.connectedAt) {
+        return new Date(activeWallet.connectedAt).toLocaleDateString()
+      }
+      return new Date().toLocaleDateString()
     },
     activateWallet() {
-      // In a real app, this would switch the active wallet
       this.showWalletInfo = false
 
       this.$q.notify({
@@ -658,7 +630,6 @@ export default {
       })
     },
     viewTransaction(txId) {
-      // Navigate to transaction detail page
       this.$router.push(`/transaction/${txId}`)
     },
     openPaymentSheet(mode) {
@@ -747,14 +718,11 @@ export default {
         console.log("hi")
         console.log(this.amount)
         console.log(this.walletState)
-        // from activeWalletId from this.walletState get the string from connectedWallets array
         let nwcString = this.walletState.connectedWallets.find(w => w.id === this.walletState.activeWalletId).nwcString
         const request = await new LN(nwcString).requestPayment(this.amount, {
-          description: this.description || "Test Payment"
+          description: this.description || "Lightning Payment"
         });
         console.log("After Payment")
-        // console.log(JSON.stringify(request.invoice))
-        // console.log(request.invoice.paymentRequest)
 
         this.invoice = request.invoice.paymentRequest;
         this.paymentStep = 1;
@@ -855,51 +823,43 @@ export default {
     confirmPayment() {
       this.isProcessing = true
 
-      // Simulate payment processing
-      setTimeout(() => {
-        this.isProcessing = false
-        this.paymentStep = 2
 
-        // Update wallet balance
-        this.walletState.balance -= (this.paymentDetails.amount + 1) // amount + fee
-        localStorage.setItem('buhoGO_wallet_state', JSON.stringify(this.walletState))
 
-        // Add to transactions
-        const newTx = {
-          id: `tx-${Date.now()}`,
-          payment_hash: Math.random().toString(36).substring(2, 38),
-          amount: this.paymentDetails.amount,
-          fees_paid: 1,
-          description: this.paymentDetails.description,
-          type: 'outgoing',
-          settled_at: Math.floor(Date.now() / 1000),
-          walletId: this.walletState.activeWalletId
-        }
 
-        this.transactions.unshift(newTx)
 
-        this.$q.notify({
-          type: 'positive',
-          message: 'Payment sent successfully',
-          position: 'top'
-        })
-      }, 2000)
+      // Use the actual payInvoice method instead of simulation
+      this.payInvoice()
     },
     copyInvoice() {
-      // Simulate copy to clipboard
-      this.$q.notify({
-        type: 'positive',
-        message: 'Invoice copied to clipboard',
-        position: 'top'
-      })
+      if (navigator.clipboard && this.invoice) {
+        navigator.clipboard.writeText(this.invoice).then(() => {
+          this.$q.notify({
+            type: 'positive',
+            message: 'Invoice copied to clipboard',
+            position: 'top'
+          })
+        }).catch(() => {
+          this.$q.notify({
+            type: 'negative',
+            message: 'Failed to copy invoice',
+            position: 'top'
+          })
+        })
+      }
     },
     shareInvoice() {
-      // Simulate share functionality
-      this.$q.notify({
-        type: 'positive',
-        message: 'Invoice shared',
-        position: 'top'
-      })
+      if (navigator.share && this.invoice) {
+        navigator.share({
+          title: 'Lightning Invoice',
+          text: `Payment request for ${this.formatBalance(Number(this.amount))}`,
+          url: `lightning:${this.invoice}`
+        }).catch(() => {
+          // Fallback to copy
+          this.copyInvoice()
+        })
+      } else {
+        this.copyInvoice()
+      }
     },
     handleCameraError(error) {
       console.error('Camera error:', error);
