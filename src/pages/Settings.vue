@@ -276,53 +276,6 @@
       </q-card>
     </q-dialog>
 
-    <!-- About Dialog -->
-    <q-dialog v-model="showAboutDialog">
-      <q-card class="settings-dialog">
-        <q-card-section class="dialog-header">
-          <div class="text-h6">About BuhoGO</div>
-          <q-btn flat round dense icon="las la-times" v-close-popup/>
-        </q-card-section>
-
-        <q-card-section class="dialog-content">
-          <div class="about-content">
-            <div class="about-logo">
-              <svg xmlns="http://www.w3.org/2000/svg" width="60" height="64" viewBox="0 0 30 32" fill="none">
-                <path d="M0 13.4423C0 6.01833 6.01833 0 13.4423 0V18.5577C13.4423 25.9817 7.42399 32 0 32V13.4423Z" fill="#059573"/>
-                <path d="M15.3906 7.30444C15.3906 3.27031 18.6609 0 22.6951 0C26.7292 0 29.9995 3.27031 29.9995 7.30444V7.72091C29.9995 11.755 26.7292 15.0253 22.6951 15.0253C18.6609 15.0253 15.3906 11.755 15.3906 7.72091V7.30444Z" fill="#78D53C"/>
-                <path d="M15.3906 24.281C15.3906 20.2469 18.6609 16.9766 22.6951 16.9766C26.7292 16.9766 29.9995 20.2469 29.9995 24.281V24.6975C29.9995 28.7316 26.7292 32.0019 22.6951 32.0019C18.6609 32.0019 15.3906 28.7316 15.3906 24.6975V24.281Z" fill="#43B65B"/>
-              </svg>
-            </div>
-            <h3 class="about-title">BuhoGO</h3>
-            <p class="about-subtitle">Lightning Wallet for the Web</p>
-            <div class="about-version">Version 1.0.0</div>
-            
-            <div class="about-description">
-              <p>BuhoGO is a Lightning Network wallet that connects to your existing wallet via Nostr Wallet Connect (NWC). Send and receive Bitcoin payments instantly with low fees.</p>
-            </div>
-
-            <div class="about-links">
-              <q-btn 
-                flat 
-                color="primary" 
-                icon="las la-external-link-alt" 
-                label="GitHub" 
-                @click="openGitHub"
-                class="q-mr-sm"
-              />
-              <q-btn 
-                flat 
-                color="primary" 
-                icon="las la-shield-alt" 
-                label="Privacy Policy" 
-                @click="openPrivacyPolicy"
-              />
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-
     <!-- Wallets Dialog -->
     <q-dialog v-model="showWalletsSheet">
       <q-card class="settings-dialog">
@@ -516,6 +469,9 @@ export default {
           return balance.toLocaleString() + ' sats'
       }
     },
+    viewWalletDetails(walletId) {
+      // Future implementation for wallet details
+    },
     connectNewWallet() {
       this.$router.push('/');
     },
@@ -586,16 +542,6 @@ export default {
       // Open support documentation or contact
       const supportUrl = 'https://github.com/getAlby/lightning-browser-extension/discussions';
       window.open(supportUrl, '_blank', 'noopener,noreferrer');
-    },
-    openGitHub() {
-      window.open('https://github.com/getAlby/lightning-browser-extension', '_blank', 'noopener,noreferrer');
-    },
-    openPrivacyPolicy() {
-      this.$q.notify({
-        type: 'info',
-        message: 'Privacy policy coming soon',
-        position: 'top'
-      });
     },
     updateWalletName(wallet) {
       // Save the updated wallet state
@@ -784,6 +730,35 @@ export default {
         console.error('Error sending notification:', error);
       }
     }
+  },
+
+  // Add About dialog to template
+  template: `
+    <!-- About Dialog -->
+    <q-dialog v-model="showAboutDialog">
+      <q-card class="settings-dialog">
+        <q-card-section class="dialog-header">
+          <div class="text-h6">About BuhoGO</div>
+          <q-btn flat round dense icon="las la-times" v-close-popup/>
+        </q-card-section>
+
+        <q-card-section class="dialog-content">
+          <div class="about-content">
+            <div class="about-logo">
+              <svg xmlns="http://www.w3.org/2000/svg" width="60" height="64" viewBox="0 0 30 32" fill="none">
+                <path d="M0 13.4423C0 6.01833 6.01833 0 13.4423 0V18.5577C13.4423 25.9817 7.42399 32 0 32V13.4423Z" fill="#059573"/>
+                <path d="M15.3906 7.30444C15.3906 3.27031 18.6609 0 22.6951 0C26.7292 0 29.9995 3.27031 29.9995 7.30444V7.72091C29.9995 11.755 26.7292 15.0253 22.6951 15.0253C18.6609 15.0253 15.3906 11.755 15.3906 7.72091V7.30444Z" fill="#78D53C"/>
+                <path d="M15.3906 24.281C15.3906 20.2469 18.6609 16.9766 22.6951 16.9766C26.7292 16.9766 29.9995 20.2469 29.9995 24.281V24.6975C29.9995 28.7316 26.7292 32.0019 22.6951 32.0019C18.6609 32.0019 15.3906 28.7316 15.3906 24.6975V24.281Z" fill="#43B65B"/>
+  },
+  openGitHub() {
+    window.open('https://github.com/getAlby/lightning-browser-extension', '_blank', 'noopener,noreferrer');
+  },
+  openPrivacyPolicy() {
+    this.$q.notify({
+      type: 'info',
+      message: 'Privacy policy coming soon',
+      position: 'top'
+    });
   }
 }
 </script>
@@ -1092,3 +1067,5 @@ export default {
   gap: 0.5rem;
 }
 </style>
+
+}
